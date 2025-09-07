@@ -29,36 +29,116 @@ export default async function navigationFlow(page, baseUrl) {
         // Get page title
         const title = await page.title();
         
-        // Check for navigation elements on this page
-        const headerNav = await page.$$eval('header nav, .header nav, nav', navs => 
-          navs.map(nav => ({
-            found: true,
-            links: Array.from(nav.querySelectorAll('a')).map(a => ({
-              text: a.textContent?.trim() || '',
-              href: a.href,
-              working: true // Assume working if we can find it
-            }))
-          }))
-        );
-        
-        const footerNav = await page.$$eval('footer nav, .footer nav', navs => 
-          navs.map(nav => ({
-            found: true,
-            links: Array.from(nav.querySelectorAll('a')).map(a => ({
+        // Check for navigation elements on this page - improved for WordPress and modern sites
+        const navigationData = await page.$$eval(`
+          header, .header, .site-header, .main-header, .top-header,
+          nav, .nav, .navigation, .main-nav, .primary-nav, .menu,
+          .navbar, .nav-menu, .main-menu, .primary-menu,
+          .wp-block-navigation, .wp-block-site-title, .wp-block-site-tagline,
+          .elementor-nav-menu, .elementor-menu, .elementor-navbar,
+          .wpr-menu, .wpr-nav, .wpr-header,
+          footer, .footer, .site-footer, .main-footer, .bottom-footer,
+          .wp-block-group, .wp-block-columns, .wp-block-column,
+          .elementor-section, .elementor-widget, .elementor-container,
+          .quick-links, .footer-links, .bottom-links, .site-links
+        `, elements => {
+          const headerNav = { found: false, links: [] };
+          const footerNav = { found: false, links: [] };
+          
+          elements.forEach(el => {
+            const tagName = el.tagName.toLowerCase();
+            const className = el.className.toLowerCase();
+            const id = el.id ? el.id.toLowerCase() : '';
+            
+            // Determine if this is a header or footer element
+            const isHeader = tagName === 'header' || 
+                           className.includes('header') || 
+                           className.includes('nav') || 
+                           className.includes('menu') ||
+                           className.includes('navbar') ||
+                           className.includes('elementor-nav') ||
+                           className.includes('wp-block-navigation') ||
+                           id.includes('header') || 
+                           id.includes('nav') || 
+                           id.includes('menu');
+                           
+            const isFooter = tagName === 'footer' || 
+                           className.includes('footer') || 
+                           className.includes('bottom') ||
+                           className.includes('site-footer') ||
+                           className.includes('main-footer') ||
+                           className.includes('quick-links') ||
+                           className.includes('footer-links') ||
+                           className.includes('bottom-links') ||
+                           className.includes('site-links') ||
+                           id.includes('footer') ||
+                           id.includes('bottom') ||
+                           id.includes('quick-links');
+            
+            // Find all links in this element
+            const links = Array.from(el.querySelectorAll('a')).map(a => ({
               text: a.textContent?.trim() || '',
               href: a.href,
               working: true
-            }))
-          }))
-        );
+            })).filter(link => link.text && link.href);
+            
+            // Assign to appropriate navigation
+            if (isHeader && links.length > 0) {
+              headerNav.found = true;
+              headerNav.links = [...headerNav.links, ...links];
+            }
+            
+            if (isFooter && links.length > 0) {
+              footerNav.found = true;
+              footerNav.links = [...footerNav.links, ...links];
+            }
+          });
+          
+          // Remove duplicate links
+          const uniqueHeaderLinks = [...new Map(headerNav.links.map(link => [link.href, link])).values()];
+          const uniqueFooterLinks = [...new Map(footerNav.links.map(link => [link.href, link])).values()];
+          
+          // Fallback: If no footer found, look for links in the bottom 30% of the page
+          if (!footerNav.found) {
+            const pageHeight = document.body.scrollHeight;
+            const bottomThreshold = pageHeight * 0.7; // Bottom 30% of page
+            
+            const allLinks = Array.from(document.querySelectorAll('a'));
+            const bottomLinks = allLinks.filter(link => {
+              const rect = link.getBoundingClientRect();
+              const elementTop = window.pageYOffset + rect.top;
+              return elementTop > bottomThreshold && link.textContent?.trim();
+            }).map(link => ({
+              text: link.textContent?.trim() || '',
+              href: link.href,
+              working: true
+            })).filter(link => link.text && link.href);
+            
+            if (bottomLinks.length > 0) {
+              footerNav.found = true;
+              footerNav.links = [...new Map(bottomLinks.map(link => [link.href, link])).values()];
+            }
+          }
+          
+          return {
+            headerNav: {
+              found: headerNav.found,
+              links: uniqueHeaderLinks
+            },
+            footerNav: {
+              found: footerNav.found,
+              links: footerNav.found ? [...new Map(footerNav.links.map(link => [link.href, link])).values()] : []
+            }
+          };
+        });
         
         pagesChecked.push({
           url: link.href,
           title: title,
           status: status,
           linkText: link.text,
-          headerNav: headerNav.length > 0 ? headerNav[0] : { found: false, links: [] },
-          footerNav: footerNav.length > 0 ? footerNav[0] : { found: false, links: [] }
+          headerNav: navigationData.headerNav,
+          footerNav: navigationData.footerNav
         });
       }
       

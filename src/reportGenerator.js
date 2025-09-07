@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { generateEnhancedHtmlReport } from './enhancedReportGenerator.js';
+import { generateYellowLabStyleReport } from './yellowlabStyleReport.js';
 
 /**
  * Enhanced HTML Report Generator for Website Testing Tool
@@ -21,16 +23,8 @@ import path from 'path';
  * @param {string} outputPath - Path where to save the HTML report (default: report.html in project root)
  */
 export function generateHtmlReport(results, outputPath = 'report.html') {
-  // Calculate comprehensive summary statistics
-  const summary = calculateComprehensiveSummary(results);
-  
-  // Generate the enhanced HTML content
-  const html = generateEnhancedHtmlContent(results, summary);
-  
-  // Write the HTML file
-  fs.writeFileSync(outputPath, html, 'utf-8');
-  
-  console.log(`📊 Enhanced HTML report generated: ${outputPath}`);
+  // Use the YellowLab-style report generator for professional analysis
+  generateYellowLabStyleReport(results, outputPath);
 }
 
 /**

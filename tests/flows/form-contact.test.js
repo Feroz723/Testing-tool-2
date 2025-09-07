@@ -26,24 +26,63 @@ export default async function contactFormFlow(page, baseUrl) {
       if (status && status >= 200 && status < 400) {
         const title = await page.title();
         
-        // Look for contact forms on this page
+        // Wait for forms to load
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(1000);
+        
+        // Look for contact forms on this page - improved detection
         const forms = await page.$$eval('form', fs => fs.map(f => {
           const fields = Array.from(f.querySelectorAll('input,textarea,select')).map(i => ({
             name: i.name || i.id || null, 
             type: i.type || null,
-            placeholder: i.placeholder || null
+            placeholder: i.placeholder || null,
+            label: i.labels && i.labels[0] ? i.labels[0].textContent.trim() : null
           }));
           
-          // Check if this looks like a contact form
-          const hasNameField = fields.some(field => 
-            field.name && (field.name.toLowerCase().includes('name') || field.name.toLowerCase().includes('fullname'))
-          );
-          const hasEmailField = fields.some(field => 
-            field.type === 'email' || (field.name && field.name.toLowerCase().includes('email'))
-          );
-          const hasMessageField = fields.some(field => 
-            field.name && (field.name.toLowerCase().includes('message') || field.name.toLowerCase().includes('comment'))
-          );
+          // More flexible contact form detection
+          const hasNameField = fields.some(field => {
+            const name = (field.name || '').toLowerCase();
+            const placeholder = (field.placeholder || '').toLowerCase();
+            const label = (field.label || '').toLowerCase();
+            return name.includes('name') || name.includes('fullname') || name.includes('firstname') ||
+                   placeholder.includes('name') || placeholder.includes('full name') ||
+                   label.includes('name') || label.includes('full name');
+          });
+          
+          const hasEmailField = fields.some(field => {
+            const name = (field.name || '').toLowerCase();
+            const placeholder = (field.placeholder || '').toLowerCase();
+            const label = (field.label || '').toLowerCase();
+            return field.type === 'email' || 
+                   name.includes('email') || name.includes('mail') ||
+                   placeholder.includes('email') || placeholder.includes('e-mail') ||
+                   label.includes('email') || label.includes('e-mail');
+          });
+          
+          const hasMessageField = fields.some(field => {
+            const name = (field.name || '').toLowerCase();
+            const placeholder = (field.placeholder || '').toLowerCase();
+            const label = (field.label || '').toLowerCase();
+            return field.type === 'textarea' ||
+                   name.includes('message') || name.includes('comment') || name.includes('inquiry') ||
+                   name.includes('question') || name.includes('feedback') ||
+                   placeholder.includes('message') || placeholder.includes('comment') ||
+                   label.includes('message') || label.includes('comment');
+          });
+          
+          // Also check for phone field (common in contact forms)
+          const hasPhoneField = fields.some(field => {
+            const name = (field.name || '').toLowerCase();
+            const placeholder = (field.placeholder || '').toLowerCase();
+            const label = (field.label || '').toLowerCase();
+            return field.type === 'tel' ||
+                   name.includes('phone') || name.includes('mobile') || name.includes('telephone') ||
+                   placeholder.includes('phone') || placeholder.includes('mobile') ||
+                   label.includes('phone') || label.includes('mobile');
+          });
+          
+          // Contact form if it has at least name + email + (message OR phone)
+          const isContactForm = hasNameField && hasEmailField && (hasMessageField || hasPhoneField);
           
           return {
             id: f.id || null,
@@ -51,10 +90,12 @@ export default async function contactFormFlow(page, baseUrl) {
             action: f.action || null,
             method: f.method || null,
             fields: fields,
-            isContactForm: hasNameField && hasEmailField && hasMessageField,
+            isContactForm: isContactForm,
             hasNameField: hasNameField,
             hasEmailField: hasEmailField,
-            hasMessageField: hasMessageField
+            hasMessageField: hasMessageField,
+            hasPhoneField: hasPhoneField,
+            fieldCount: fields.length
           };
         }));
         

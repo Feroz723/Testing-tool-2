@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { runFlowsForUrl } from './src/flowsRunner.js';
 import { auditAll } from './src/audit.js';
 import { generateHtmlReport } from './src/reportGenerator.js';
+import { formatToSimpleResults, formatAsString, formatAsJSON } from './src/simpleResultFormatter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -196,6 +197,21 @@ app.get('/', (req, res) => {
                 >
             </div>
             
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="simple" name="simple" value="true">
+                    Simple Output Format (Test Name + Pass/Fail)
+                </label>
+            </div>
+            
+            <div class="form-group" id="formatGroup" style="display: none;">
+                <label for="format">Output Format:</label>
+                <select id="format" name="format">
+                    <option value="string">Readable Text</option>
+                    <option value="json">JSON</option>
+                </select>
+            </div>
+            
             <button type="submit" class="btn" id="submitBtn">
                 🚀 Run Full Test Suite
             </button>
@@ -226,6 +242,12 @@ app.get('/', (req, res) => {
             submitBtn.textContent = 'Running Tests...';
             loading.style.display = 'block';
         });
+        
+        // Show/hide format options based on simple checkbox
+        document.getElementById('simple').addEventListener('change', function(e) {
+            const formatGroup = document.getElementById('formatGroup');
+            formatGroup.style.display = e.target.checked ? 'block' : 'none';
+        });
     </script>
 </body>
 </html>
@@ -236,7 +258,7 @@ app.get('/', (req, res) => {
 app.post('/run-tests', async (req, res) => {
   console.log('📥 POST /run-tests received:', req.body);
   
-  const { url } = req.body;
+  const { url, simple, format } = req.body;
   
   if (!url) {
     console.log('❌ No URL provided');
@@ -260,6 +282,16 @@ app.post('/run-tests', async (req, res) => {
     console.log('📄 Enhanced HTML report generated');
     
     console.log(`✅ Full test suite completed for: ${url}`);
+    
+    // Handle simple format output
+    if (simple) {
+      const simpleResults = formatToSimpleResults(results);
+      if (format === 'json') {
+        return res.json(simpleResults);
+      } else {
+        return res.send(`<pre>${formatAsString(simpleResults)}</pre>`);
+      }
+    }
     
     // Redirect to report
     res.redirect('/report');
