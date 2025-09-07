@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Testing Report - https://n227.enkonix.online/</title>
+    
+    <!-- Chart.js CDN for pie chart visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* ===== MAIN STYLING - Customize colors and layout here ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header .test-url {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .header .timestamp {
+            opacity: 0.8;
+            font-size: 1em;
+        }
+        
+        /* ===== SUMMARY CARDS - Customize card colors and layout here ===== */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 5px solid;
+        }
+        
+        .summary-card.total { border-left-color: #6c757d; }
+        .summary-card.passed { border-left-color: #28a745; }
+        .summary-card.failed { border-left-color: #dc3545; }
+        .summary-card.performance { border-left-color: #007bff; }
+        .summary-card.accessibility { border-left-color: #ffc107; }
+        .summary-card.seo { border-left-color: #17a2b8; }
+        .summary-card.issues { border-left-color: #dc3545; }
+        
+        .summary-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+        
+        .summary-card.passed h3 { color: #28a745; }
+        .summary-card.failed h3 { color: #dc3545; }
+        .summary-card.performance h3 { color: #007bff; }
+        .summary-card.accessibility h3 { color: #ffc107; }
+        .summary-card.seo h3 { color: #17a2b8; }
+        .summary-card.issues h3 { color: #dc3545; }
+        
+        .summary-card p {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        /* ===== CHART SECTION - Customize chart styling here ===== */
+        .chart-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .chart-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        /* ===== RESULTS SECTIONS - Customize section styling here ===== */
+        .results-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .results-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        /* ===== LIGHTHOUSE SCORES - Customize score display here ===== */
+        .lighthouse-scores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .score-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .score-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .score-good { color: #28a745; }
+        .score-warning { color: #ffc107; }
+        .score-bad { color: #dc3545; }
+        
+        /* ===== PA11Y ISSUES - Customize accessibility issue display here ===== */
+        .pa11y-issue {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .pa11y-issue h4 {
+            color: #721c24;
+            margin-bottom: 8px;
+        }
+        
+        .pa11y-issue .code {
+            font-family: 'Courier New', monospace;
+            background: #e2e3e5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        
+        /* ===== E2E TEST TABLE - Customize table styling here ===== */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .results-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        /* ===== STATUS BADGES - Customize status colors here ===== */
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status.passed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status.failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.skipped {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        /* ===== COLLAPSIBLE SECTIONS - Customize expand/collapse behavior here ===== */
+        .collapsible {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .collapsible-header {
+            padding: 15px;
+            cursor: pointer;
+            background-color: #e9ecef;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .collapsible-header:hover {
+            background-color: #dee2e6;
+        }
+        
+        .collapsible-content {
+            padding: 15px;
+            display: none;
+            background-color: white;
+        }
+        
+        .collapsible-content.active {
+            display: block;
+        }
+        
+        .toggle-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .toggle-icon.rotated {
+            transform: rotate(180deg);
+        }
+        
+        /* ===== SCREENSHOTS - Customize screenshot display here ===== */
+        .screenshot {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* ===== DOWNLOAD BUTTON - Customize download button styling here ===== */
+        .download-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+        
+        /* ===== ERROR MESSAGES - Customize error display here ===== */
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+        
+        .result-details {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+            margin-top: 10px;
+        }
+        
+        /* ===== RESPONSIVE DESIGN - Customize mobile layout here ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .lighthouse-scores {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .results-table {
+                font-size: 0.9em;
+            }
+            
+            .results-table th,
+            .results-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ===== HEADER SECTION ===== -->
+        <div class="header">
+            <h1>🧪 Website Testing Report</h1>
+            <div class="test-url">Tested URL: https://n227.enkonix.online/</div>
+            <div class="timestamp">Generated on 7/9/2025, 9:28:23 am</div>
+        </div>
+        
+        <!-- ===== SUMMARY CARDS ===== -->
+        <div class="summary-grid">
+            <div class="summary-card total">
+                <h3>4</h3>
+                <p>Total E2E Tests</p>
+            </div>
+            <div class="summary-card passed">
+                <h3>4</h3>
+                <p>Passed Tests</p>
+            </div>
+            <div class="summary-card failed">
+                <h3>0</h3>
+                <p>Failed Tests</p>
+            </div>
+            <div class="summary-card performance">
+                <h3>43</h3>
+                <p>Performance Score</p>
+            </div>
+            <div class="summary-card accessibility">
+                <h3>90</h3>
+                <p>Accessibility Score</p>
+            </div>
+            <div class="summary-card seo">
+                <h3>92</h3>
+                <p>SEO Score</p>
+            </div>
+            <div class="summary-card issues">
+                <h3>34</h3>
+                <p>Accessibility Issues</p>
+            </div>
+        </div>
+        
+        <!-- ===== PIE CHART SECTION ===== -->
+        <div class="chart-section">
+            <h2>📊 Test Results Overview</h2>
+            <div class="chart-container">
+                <canvas id="resultsChart" width="400" height="400"></canvas>
+            </div>
+        </div>
+        
+        <!-- ===== LIGHTHOUSE RESULTS ===== -->
+        
+    <div class="results-section">
+      <h2>⚡ Lighthouse Performance Audit</h2>
+      
+      <div class="lighthouse-scores">
+        <div class="score-card">
+          <div class="score-value score-bad">43</div>
+          <div>Performance</div>
+        </div>
+        <div class="score-card">
+          <div class="score-value score-good">90</div>
+          <div>Accessibility</div>
+        </div>
+        <div class="score-card">
+          <div class="score-value score-good">96</div>
+          <div>Best Practices</div>
+        </div>
+        <div class="score-card">
+          <div class="score-value score-good">92</div>
+          <div>SEO</div>
+        </div>
+        <div class="score-card">
+          <div class="score-value score-bad">0</div>
+          <div>PWA</div>
+        </div>
+      </div>
+      
+      
+        <div class="collapsible">
+          <div class="collapsible-header">
+            <span>View Performance Timings</span>
+            <span class="toggle-icon">▼</span>
+          </div>
+          <div class="collapsible-content">
+            <div class="result-details">
+              <pre>{
+  "firstContentfulPaint": 2004.478,
+  "speedIndex": 8949.406584934766,
+  "largestContentfulPaint": 5757.478,
+  "timeToInteractive": 6066.328,
+  "totalBlockingTime": 1638,
+  "cumulativeLayoutShift": 0.00047957954120960594
+}</pre>
+            </div>
+          </div>
+        </div>
+      
+    </div>
+  
+        
+        <!-- ===== PA11Y ACCESSIBILITY RESULTS ===== -->
+        
+    <div class="results-section">
+      <h2>♿ Accessibility Audit (Pa11y)</h2>
+      <p><strong>Total Issues Found:</strong> 34</p>
+      
+    <div class="pa11y-issue">
+      <h4>Anchor element found with a valid href attribute, but no link content has been supplied.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle4.Guideline4_1.4_1_2.H91.A.NoContent</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(1) &gt; section &gt; div &gt; div:nth-child(1) &gt; div &gt; div &gt; div &gt; picture &gt; a</code></p>
+      <p><strong>Context:</strong> <code>&lt;a class=&quot;wpr-logo-url&quot; rel=&quot;home&quot; aria-label=&quot;&quot; href=&quot;https://n227.enkonix.online/&quot;&gt;&lt;/a&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>Anchor element found with a valid href attribute, but no link content has been supplied.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle4.Guideline4_1.4_1_2.H91.A.NoContent</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(1) &gt; section &gt; div &gt; div:nth-child(1) &gt; div &gt; div &gt; div &gt; a</code></p>
+      <p><strong>Context:</strong> <code>&lt;a class=&quot;wpr-logo-url&quot; rel=&quot;home&quot; aria-label=&quot;&quot; href=&quot;https://n227.enkonix.online/&quot;&gt;&lt;/a&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.58:1. Recommendation:  change text colour to #3d6eed.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail</span></p>
+      <p><strong>Selector:</strong> <code>#menu-1-0f9b152 &gt; li:nth-child(1) &gt; a</code></p>
+      <p><strong>Context:</strong> <code>&lt;a href=&quot;https://n227.enkonix.online/&quot; aria-current=&quot;page&quot; class=&quot;wpr-menu-item wpr-pointer-item wpr-active-menu-item&quot;&gt;Home&lt;/a&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 3:1, but text in this element has a contrast ratio of 1:1. Recommendation:  change text colour to #949494.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle1.Guideline1_4.1_4_3.G145.Fail</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(2) &gt; div:nth-child(1) &gt; div:nth-child(2) &gt; h2</code></p>
+      <p><strong>Context:</strong> <code>&lt;h2 class=&quot;elementor-heading-title elementor-size-default&quot;&gt;Designed for Life, Built for Yo...&lt;/h2&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 1:1. Recommendation:  change text colour to #767676.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(2) &gt; div:nth-child(1) &gt; div:nth-child(3) &gt; p</code></p>
+      <p><strong>Context:</strong> <code>&lt;p&gt;Find more than a house—discover...&lt;/p&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 3.58:1. Recommendation:  change text colour to #3d6eed.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(2) &gt; div:nth-child(2) &gt; div:nth-child(1) &gt; div:nth-child(1) &gt; p</code></p>
+      <p><strong>Context:</strong> <code>&lt;p&gt;About Us&lt;/p&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.29:1. Recommendation:  change text colour to #767676.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(2) &gt; div:nth-child(2) &gt; div:nth-child(1) &gt; div:nth-child(2) &gt; p</code></p>
+      <p><strong>Context:</strong> <code>&lt;p&gt;Real estate goes beyond buying ...&lt;/p&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.48:1. Recommendation:  change text colour to #767676.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(2) &gt; div:nth-child(2) &gt; div:nth-child(1) &gt; div:nth-child(3) &gt; ul &gt; li:nth-child(1) &gt; span:nth-child(2)</code></p>
+      <p><strong>Context:</strong> <code>&lt;span class=&quot;elementor-icon-list-text&quot;&gt;Dedicated to creating homes tha...&lt;/span&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.48:1. Recommendation:  change text colour to #767676.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(2) &gt; div:nth-child(2) &gt; div:nth-child(1) &gt; div:nth-child(3) &gt; ul &gt; li:nth-child(2) &gt; span:nth-child(2)</code></p>
+      <p><strong>Context:</strong> <code>&lt;span class=&quot;elementor-icon-list-text&quot;&gt;Focused on prime locations ensu...&lt;/span&gt;</code></p>
+    </div>
+  
+    <div class="pa11y-issue">
+      <h4>This element has insufficient contrast at this conformance level. Expected a contrast ratio of at least 4.5:1, but text in this element has a contrast ratio of 4.48:1. Recommendation:  change text colour to #767676.</h4>
+      <p><strong>Code:</strong> <span class="code">WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail</span></p>
+      <p><strong>Selector:</strong> <code>html &gt; body &gt; div:nth-child(2) &gt; div:nth-child(2) &gt; div:nth-child(1) &gt; div:nth-child(3) &gt; ul &gt; li:nth-child(3) &gt; span:nth-child(2)</code></p>
+      <p><strong>Context:</strong> <code>&lt;span class=&quot;elementor-icon-list-text&quot;&gt;Committed to delivering quality...&lt;/span&gt;</code></p>
+    </div>
+  
+    </div>
+  
+        
+        <!-- ===== E2E TEST RESULTS ===== -->
+        <div class="results-section">
+            <h2>🧪 E2E Test Results</h2>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Test File</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+      <tr>
+        <td><strong>buttons.test.js</strong></td>
+        <td><span class="status passed">✅ passed</span></td>
+        <td>14469ms</td>
+        <td><div class="collapsible">
+      <div class="collapsible-header">
+        <span>View Test Details</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="collapsible-content">
+        <div class="result-details">
+          <pre>{
+  &quot;pagesChecked&quot;: [
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/&quot;,
+      &quot;title&quot;: &quot;n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Home&quot;,
+      &quot;buttonsFound&quot;: 0,
+      &quot;buttonsTested&quot;: 0,
+      &quot;buttonResults&quot;: []
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+      &quot;title&quot;: &quot;About Us – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;About Us&quot;,
+      &quot;buttonsFound&quot;: 0,
+      &quot;buttonsTested&quot;: 0,
+      &quot;buttonResults&quot;: []
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+      &quot;title&quot;: &quot;Featured Listings – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Featured Listings&quot;,
+      &quot;buttonsFound&quot;: 0,
+      &quot;buttonsTested&quot;: 0,
+      &quot;buttonResults&quot;: []
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+      &quot;title&quot;: &quot;Contact Us – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Contact Us&quot;,
+      &quot;buttonsFound&quot;: 1,
+      &quot;buttonsTested&quot;: 1,
+      &quot;buttonResults&quot;: [
+        {
+          &quot;button&quot;: &quot;Submit&quot;,
+          &quot;status&quot;: &quot;clicked&quot;,
+          &quot;selector&quot;: &quot;button&quot;,
+          &quot;working&quot;: true
+        }
+      ]
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/#&quot;,
+      &quot;title&quot;: &quot;n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;&quot;,
+      &quot;buttonsFound&quot;: 0,
+      &quot;buttonsTested&quot;: 0,
+      &quot;buttonResults&quot;: []
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/aspenhill-estates/&quot;,
+      &quot;title&quot;: &quot;Aspenhill Estates – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Aspenhill Estates&quot;,
+      &quot;buttonsFound&quot;: 0,
+      &quot;buttonsTested&quot;: 0,
+      &quot;buttonResults&quot;: []
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/crystalbrook-villas/&quot;,
+      &quot;title&quot;: &quot;Crystalbrook Villas – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Crystalbrook Villas&quot;,
+      &quot;buttonsFound&quot;: 0,
+      &quot;buttonsTested&quot;: 0,
+      &quot;buttonResults&quot;: []
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/rosemont-haven/&quot;,
+      &quot;title&quot;: &quot;Rosemont Haven – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Rosemont Haven&quot;,
+      &quot;buttonsFound&quot;: 0,
+      &quot;buttonsTested&quot;: 0,
+      &quot;buttonResults&quot;: []
+    }
+  ],
+  &quot;summary&quot;: {
+    &quot;totalPages&quot;: 8,
+    &quot;totalButtonsFound&quot;: 1,
+    &quot;totalButtonsTested&quot;: 1,
+    &quot;workingButtons&quot;: 1,
+    &quot;brokenButtons&quot;: 0
+  }
+}</pre>
+        </div>
+      </div>
+    </div></td>
+      </tr>
+    
+      <tr>
+        <td><strong>form-contact.test.js</strong></td>
+        <td><span class="status passed">✅ passed</span></td>
+        <td>9049ms</td>
+        <td><div class="collapsible">
+      <div class="collapsible-header">
+        <span>View Test Details</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="collapsible-content">
+        <div class="result-details">
+          <pre>{
+  &quot;results&quot;: [
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/&quot;,
+      &quot;title&quot;: &quot;n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;Home&quot;,
+      &quot;status&quot;: 200,
+      &quot;formsFound&quot;: 0,
+      &quot;contactFormsFound&quot;: 0
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+      &quot;title&quot;: &quot;About Us – n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;About Us&quot;,
+      &quot;status&quot;: 200,
+      &quot;formsFound&quot;: 0,
+      &quot;contactFormsFound&quot;: 0
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+      &quot;title&quot;: &quot;Featured Listings – n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;Featured Listings&quot;,
+      &quot;status&quot;: 200,
+      &quot;formsFound&quot;: 0,
+      &quot;contactFormsFound&quot;: 0
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+      &quot;title&quot;: &quot;Contact Us – n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;Contact Us&quot;,
+      &quot;status&quot;: 200,
+      &quot;formsFound&quot;: 1,
+      &quot;contactFormsFound&quot;: 1
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/#&quot;,
+      &quot;title&quot;: &quot;n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;&quot;,
+      &quot;status&quot;: 200,
+      &quot;formsFound&quot;: 0,
+      &quot;contactFormsFound&quot;: 0
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/aspenhill-estates/&quot;,
+      &quot;title&quot;: &quot;Aspenhill Estates – n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;Aspenhill Estates&quot;,
+      &quot;status&quot;: 200,
+      &quot;formsFound&quot;: 0,
+      &quot;contactFormsFound&quot;: 0
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/crystalbrook-villas/&quot;,
+      &quot;title&quot;: &quot;Crystalbrook Villas – n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;Crystalbrook Villas&quot;,
+      &quot;status&quot;: 200,
+      &quot;formsFound&quot;: 0,
+      &quot;contactFormsFound&quot;: 0
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/rosemont-haven/&quot;,
+      &quot;title&quot;: &quot;Rosemont Haven – n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;Rosemont Haven&quot;,
+      &quot;status&quot;: 200,
+      &quot;formsFound&quot;: 0,
+      &quot;contactFormsFound&quot;: 0
+    }
+  ],
+  &quot;contactFormsFound&quot;: [
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+      &quot;title&quot;: &quot;Contact Us – n227.enkonix.online&quot;,
+      &quot;linkText&quot;: &quot;Contact Us&quot;,
+      &quot;formsFound&quot;: 1,
+      &quot;forms&quot;: [
+        {
+          &quot;id&quot;: &quot;contactForm&quot;,
+          &quot;name&quot;: &quot;ref: &lt;Node&gt;&quot;,
+          &quot;action&quot;: &quot;https://formspree.io/f/xovlekvg&quot;,
+          &quot;method&quot;: &quot;post&quot;,
+          &quot;fields&quot;: [
+            {
+              &quot;name&quot;: &quot;name&quot;,
+              &quot;type&quot;: &quot;text&quot;,
+              &quot;placeholder&quot;: null
+            },
+            {
+              &quot;name&quot;: &quot;email&quot;,
+              &quot;type&quot;: &quot;email&quot;,
+              &quot;placeholder&quot;: null
+            },
+            {
+              &quot;name&quot;: &quot;subject&quot;,
+              &quot;type&quot;: &quot;text&quot;,
+              &quot;placeholder&quot;: null
+            },
+            {
+              &quot;name&quot;: &quot;message&quot;,
+              &quot;type&quot;: &quot;textarea&quot;,
+              &quot;placeholder&quot;: null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  &quot;summary&quot;: {
+    &quot;totalPagesChecked&quot;: 8,
+    &quot;totalFormsFound&quot;: 1,
+    &quot;contactFormsFound&quot;: 1,
+    &quot;pagesWithContactForms&quot;: [
+      &quot;Contact Us&quot;
+    ]
+  }
+}</pre>
+        </div>
+      </div>
+    </div></td>
+      </tr>
+    
+      <tr>
+        <td><strong>login.test.js</strong></td>
+        <td><span class="status passed">✅ passed</span></td>
+        <td>5172ms</td>
+        <td><div class="collapsible">
+      <div class="collapsible-header">
+        <span>View Test Details</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="collapsible-content">
+        <div class="result-details">
+          <pre>{
+  &quot;tried&quot;: 4,
+  &quot;results&quot;: [
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/login&quot;,
+      &quot;status&quot;: 200,
+      &quot;formFound&quot;: false,
+      &quot;note&quot;: &quot;no-login-form&quot;
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/signin&quot;,
+      &quot;status&quot;: 404,
+      &quot;formFound&quot;: false
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/account/login&quot;,
+      &quot;status&quot;: 404,
+      &quot;formFound&quot;: false
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/user/login&quot;,
+      &quot;status&quot;: 404,
+      &quot;formFound&quot;: false
+    }
+  ],
+  &quot;loginFormsFound&quot;: [],
+  &quot;summary&quot;: {
+    &quot;totalPagesChecked&quot;: 4,
+    &quot;loginFormsFound&quot;: 0,
+    &quot;hasLoginOnHomepage&quot;: false,
+    &quot;loginPages&quot;: []
+  }
+}</pre>
+        </div>
+      </div>
+    </div></td>
+      </tr>
+    
+      <tr>
+        <td><strong>navigation.test.js</strong></td>
+        <td><span class="status passed">✅ passed</span></td>
+        <td>8298ms</td>
+        <td><div class="collapsible">
+      <div class="collapsible-header">
+        <span>View Test Details</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="collapsible-content">
+        <div class="result-details">
+          <pre>{
+  &quot;checked&quot;: 9,
+  &quot;results&quot;: [
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+      &quot;text&quot;: &quot;Home&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    },
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+      &quot;text&quot;: &quot;About Us&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    },
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+      &quot;text&quot;: &quot;Featured Listings&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    },
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+      &quot;text&quot;: &quot;Contact Us&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    },
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/#&quot;,
+      &quot;text&quot;: &quot;&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    },
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/aspenhill-estates/&quot;,
+      &quot;text&quot;: &quot;Aspenhill Estates&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    },
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/crystalbrook-villas/&quot;,
+      &quot;text&quot;: &quot;Crystalbrook Villas&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    },
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/rosemont-haven/&quot;,
+      &quot;text&quot;: &quot;Rosemont Haven&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    },
+    {
+      &quot;href&quot;: &quot;https://n227.enkonix.online/stonebridge-villas/&quot;,
+      &quot;text&quot;: &quot;Stonebridge Villas&quot;,
+      &quot;status&quot;: 200,
+      &quot;working&quot;: true
+    }
+  ],
+  &quot;pagesChecked&quot;: [
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/&quot;,
+      &quot;title&quot;: &quot;n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Home&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+      &quot;title&quot;: &quot;About Us – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;About Us&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+      &quot;title&quot;: &quot;Featured Listings – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Featured Listings&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+      &quot;title&quot;: &quot;Contact Us – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Contact Us&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/#&quot;,
+      &quot;title&quot;: &quot;n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/aspenhill-estates/&quot;,
+      &quot;title&quot;: &quot;Aspenhill Estates – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Aspenhill Estates&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/crystalbrook-villas/&quot;,
+      &quot;title&quot;: &quot;Crystalbrook Villas – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Crystalbrook Villas&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/rosemont-haven/&quot;,
+      &quot;title&quot;: &quot;Rosemont Haven – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Rosemont Haven&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    },
+    {
+      &quot;url&quot;: &quot;https://n227.enkonix.online/stonebridge-villas/&quot;,
+      &quot;title&quot;: &quot;Stonebridge Villas – n227.enkonix.online&quot;,
+      &quot;status&quot;: 200,
+      &quot;linkText&quot;: &quot;Stonebridge Villas&quot;,
+      &quot;headerNav&quot;: {
+        &quot;found&quot;: true,
+        &quot;links&quot;: [
+          {
+            &quot;text&quot;: &quot;Home&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;About Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/about-us/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Featured Listings&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/featured-listings/&quot;,
+            &quot;working&quot;: true
+          },
+          {
+            &quot;text&quot;: &quot;Contact Us&quot;,
+            &quot;href&quot;: &quot;https://n227.enkonix.online/contact-us/&quot;,
+            &quot;working&quot;: true
+          }
+        ]
+      },
+      &quot;footerNav&quot;: {
+        &quot;found&quot;: false,
+        &quot;links&quot;: []
+      }
+    }
+  ],
+  &quot;summary&quot;: {
+    &quot;totalLinks&quot;: 9,
+    &quot;workingLinks&quot;: 9,
+    &quot;brokenLinks&quot;: 0,
+    &quot;pagesWithHeaderNav&quot;: 9,
+    &quot;pagesWithFooterNav&quot;: 0
+  }
+}</pre>
+        </div>
+      </div>
+    </div></td>
+      </tr>
+    
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- ===== DOWNLOAD SECTION ===== -->
+        <div class="download-section">
+            <a href="#" class="download-btn" id="downloadBtn" download="report.html">
+                📥 Download Report
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // ===== CHART.JS PIE CHART - Customize chart colors and behavior here =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            const passed = 4;
+            const failed = 0;
+            const skipped = 0;
+            
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Passed', 'Failed', 'Skipped'],
+                    datasets: [{
+                        data: [passed, failed, skipped],
+                        backgroundColor: [
+                            '#28a745',  // Green for passed
+                            '#dc3545',  // Red for failed
+                            '#ffc107'   // Yellow for skipped
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        
+        // ===== COLLAPSIBLE FUNCTIONALITY - Customize behavior here =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+            
+            collapsibleHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    const icon = this.querySelector('.toggle-icon');
+                    
+                    if (content.classList.contains('active')) {
+                        content.classList.remove('active');
+                        icon.classList.remove('rotated');
+                    } else {
+                        content.classList.add('active');
+                        icon.classList.add('rotated');
+                    }
+                });
+            });
+        });
+        
+        // ===== DOWNLOAD FUNCTIONALITY - Customize download behavior here =====
+        document.addEventListener('DOMContentLoaded', function() {
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            downloadBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Get the current HTML content
+                const htmlContent = document.documentElement.outerHTML;
+                
+                // Create a blob and download
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = window.URL.createObjectURL(blob);
+                
+                // Create a temporary link and trigger download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'website-test-report.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            });
+        });
+    </script>
+</body>
+</html>
