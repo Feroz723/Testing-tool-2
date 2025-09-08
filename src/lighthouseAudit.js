@@ -1,9 +1,25 @@
 import lighthouse from 'lighthouse';
 import * as chromeLauncher from 'chrome-launcher';
+import puppeteer from 'puppeteer';
 
 
 export async function lighthouseAudit(url) {
-  const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless', '--no-sandbox'] });
+  // Ensure a Chromium binary exists in containerized hosts (e.g., Render)
+  // Prefer CHROME_PATH if provided; otherwise use Puppeteer's bundled Chromium
+  const chromePath = process.env.CHROME_PATH || puppeteer.executablePath();
+
+  const chrome = await chromeLauncher.launch({
+    chromePath,
+    chromeFlags: [
+      '--headless=new',
+      '--no-sandbox',
+      '--disable-gpu',
+      '--disable-dev-shm-usage',
+      '--no-zygote',
+      '--single-process'
+    ]
+  });
+
   const options = { logLevel: 'error', output: 'json', onlyCategories: ['performance','accessibility','best-practices','seo','pwa'], port: chrome.port };
   const runnerResult = await lighthouse(url, options);
   const lhr = runnerResult.lhr;
