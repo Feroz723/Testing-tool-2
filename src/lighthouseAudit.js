@@ -1,29 +1,32 @@
 import lighthouse from 'lighthouse';
-import * as chromeLauncher from 'chrome-launcher';
 import puppeteer from 'puppeteer';
 
-
 export async function lighthouseAudit(url) {
-  // Ensure a Chromium binary exists in containerized hosts (e.g., Render)
-  // Prefer CHROME_PATH if provided; otherwise use Puppeteer's bundled Chromium
-  const chromePath = process.env.CHROME_PATH || puppeteer.executablePath();
-
-  const chrome = await chromeLauncher.launch({
-    chromePath,
-    chromeFlags: [
-      '--headless=new',
+  // Launch bundled Chromium with Puppeteer
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: [
       '--no-sandbox',
+      '--disable-setuid-sandbox',
       '--disable-gpu',
       '--disable-dev-shm-usage',
       '--no-zygote',
-      '--single-process'
+      '--single-process',
+      '--remote-debugging-port=9222'
     ]
   });
 
-  const options = { logLevel: 'error', output: 'json', onlyCategories: ['performance','accessibility','best-practices','seo','pwa'], port: chrome.port };
+  const options = {
+    logLevel: 'error',
+    output: 'json',
+    onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo', 'pwa'],
+    port: 9222 // connect Lighthouse to Puppeteer's debugging port
+  };
+
   const runnerResult = await lighthouse(url, options);
   const lhr = runnerResult.lhr;
-  await chrome.kill();
+
+  await browser.close();
 
   const categories = lhr.categories;
   const audits = lhr.audits;
