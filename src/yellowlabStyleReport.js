@@ -21,7 +21,9 @@ export function generateYellowLabStyleReport(results, outputPath = 'report.html'
 
 function calculateYellowLabSummary(results) {
   const firstResult = results.results && results.results[0] ? results.results[0] : results;
-  const e2eRuns = firstResult.flows ? firstResult.flows.runs : (results.runs || []);
+  const e2eRuns = Array.isArray(firstResult?.flows?.runs)
+    ? firstResult.flows.runs
+    : (Array.isArray(results?.runs) ? results.runs : []);
   
   // Extract detailed metrics
   let totalButtons = 0;
@@ -119,7 +121,9 @@ function generateYellowLabHtmlContent(results, summary) {
   const timestamp = new Date().toLocaleString();
   const firstResult = results.results && results.results[0] ? results.results[0] : results;
   const testUrl = results.url || firstResult.url || 'Unknown URL';
-  const e2eRuns = firstResult.flows ? firstResult.flows.runs : (results.runs || []);
+  const e2eRuns = Array.isArray(firstResult?.flows?.runs)
+    ? firstResult.flows.runs
+    : (Array.isArray(results?.runs) ? results.runs : []);
   
   return `<!DOCTYPE html>
 <html lang="en">
