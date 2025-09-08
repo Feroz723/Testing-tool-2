@@ -1,39 +1,18 @@
 {
-  "name": "mini-lab-tools-pro",
+  "name": "testing-tool",
   "version": "1.0.0",
-  "description": "Advanced web performance & quality auditor (Puppeteer + Lighthouse + pa11y) with API, CLI, thresholds, dashboard UI",
-  "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "web": "node server.js",
-    "dev": "NODE_ENV=development node server.js",
-    "cli": "node cli.js",
-    "test:audit": "node cli.js --url=https://example.com",
-    "lint": "eslint .",
-    "prepare": "husky install",
     "e2e": "node cli.js --flows",
-    "install:playwright": "npx playwright install --with-deps",
-    "postinstall": "npx puppeteer browsers install chrome",
-    "install:chromium": "npx puppeteer browsers install chrome"
+    "postinstall": "puppeteer install"
   },
-  "author": "you",
-  "license": "MIT",
   "dependencies": {
-    "body-parser": "1.20.2",
-    "chart.js": "4.4.4",
-    "chrome-launcher": "1.1.1",
-    "cors": "2.8.5",
-    "express": "4.19.2",
-    "fs-extra": "11.2.0",
-    "lighthouse": "12.3.0",
-    "pa11y": "6.2.3",
-    "playwright": "1.43.0",
-    "puppeteer": "^23.4.1",
-    "yargs": "17.7.2"
-  },
-  "devDependencies": {
-    "eslint": "^9.9.1",
-    "husky": "^9.1.6"
+    "express": "^4.19.2",
+    "yargs": "^17.7.2",
+    "lighthouse": "^11.7.1",
+    "puppeteer": "^22.6.5",
+    "chrome-launcher": "^1.1.0"
   }
 }

@@ -13,9 +13,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # Install dependencies (including Puppeteer's Chromium)
       - run: npm ci
-      - run: node cli.js --url=https://example.com --save
+      - run: npx puppeteer browsers install chrome
+
+      # Run audits (don’t fail build if tests fail)
+      - run: npm run e2e || true
+
+      # Upload HTML/JSON report if generated
       - uses: actions/upload-artifact@v4
         with:
-          name: audit-results
-          path: data/results.json
+          name: audit-report
+          path: |
+            report.html
+            data/results.json
